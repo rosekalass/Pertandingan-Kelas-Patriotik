@@ -1,0 +1,1 @@
+{"name": "mattary-keceriaan-dashboard","version": "1.0.0","description": "Dashboard Pertandingan Keceriaan Kelas MATTARY 2026","main": "index.html","scripts": {"start": "echo 'Open index.html in your browser.'","test": "echo 'No tests specified.'"},"keywords": ["dashboard","firebase","mattary"],"author": "Panitia Sejarah 2026","license": "MIT"}
