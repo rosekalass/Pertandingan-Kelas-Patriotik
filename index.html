@@ -709,26 +709,39 @@
         }
 
         function getWeekLockStatus(weekNum) {
-            const roleKey = sessionStorage.getItem('loggedInRole');
-            if (roleKey === 'Admin') return { locked: false, reason: 'Admin Override' };
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (loggedInUser === 'Admin' || loggedInUser === 'Ketua Panitia' || loggedInUser === 'Secretariat') {
+                return { locked: false, reason: 'Akses Penuh Pengurusan' };
+            }
 
-            const today = new Date(); today.setHours(0,0,0,0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             const range = WEEK_RANGES[weekNum];
             const startDate = new Date(range.start);
-            const endDate = new Date(range.end); endDate.setHours(23,59,59,999);
+            const endDate = new Date(range.end);
+            endDate.setHours(23, 59, 59, 999);
 
-            if (today < startDate) return { locked: true, reason: `Dibuka pada ${range.label}` };
-            if (today > endDate) return { locked: true, reason: `Tamat pada ${range.label}` };
+            if (today < startDate) {
+                return { locked: true, reason: `Dibuka pada ${range.label}` };
+            } else if (today > endDate) {
+                return { locked: true, reason: `Tamat pada ${range.label}` };
+            }
             return { locked: false, reason: 'Aktif' };
         }
 
         function canUserEvaluate(weekNum) {
-            const roleKey = sessionStorage.getItem('loggedInRole');
-            if (roleKey === 'Admin') return true;
-            if (roleKey === 'Secretariat' || roleKey === 'Public') return false;
-            
-            const designated = WEEK_RANGES[weekNum].judge;
-            return roleKey === designated;
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (!loggedInUser || loggedInUser === 'Public Viewer') return false;
+            if (loggedInUser === 'Admin' || loggedInUser === 'Ketua Panitia' || loggedInUser === 'Secretariat') return true;
+
+            const designatedJudge = WEEKLY_JUDGES[weekNum];
+            if (loggedInUser === 'Mudir' && designatedJudge === 'Mudir') return true;
+            if (loggedInUser === 'Pen. Kanan Pentadbiran' && designatedJudge === 'Pen. Kanan Pentadbiran') return true;
+            if (loggedInUser === 'Pen. Kanan al-Quran' && designatedJudge === 'Pen. Kanan al-Quran') return true;
+            if (loggedInUser === 'Pen. Kanan HEM' && designatedJudge === 'Pen. Kanan HEM') return true;
+            if (loggedInUser === 'Pen. Kanan Kokurikulum' && designatedJudge === 'Pen. Kanan Kokurikulum') return true;
+            return false;
         }
 
         function evalWeekLocks() {
