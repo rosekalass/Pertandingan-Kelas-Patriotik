@@ -728,12 +728,13 @@
                 const status = getWeekLockStatus(w);
                 const tabBtn = document.getElementById(`tab-m${w}`);
                 const lockIcon = document.querySelector(`.lock-icon-m${w}`);
+                
                 if (tabBtn) {
-                    if (status.locked || (!canUserEvaluate(w) && sessionStorage.getItem('loggedInRole') !== 'Secretariat')) {
-                        tabBtn.classList.add('opacity-50');
+                    if (status.locked) {
+                        tabBtn.classList.add('opacity-50', 'cursor-not-allowed');
                         if (lockIcon) lockIcon.classList.remove('hidden');
                     } else {
-                        tabBtn.classList.remove('opacity-50');
+                        tabBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                         if (lockIcon) lockIcon.classList.add('hidden');
                     }
                 }
