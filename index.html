@@ -687,10 +687,11 @@
             document.getElementById('section-analysis').classList.add('hidden');
 
             if (tabId.startsWith('m')) {
-                currentWeek = parseInt(tabId.replace('m', ''));
-                document.getElementById('subheader-active-week').innerText = `Minggu ${currentWeek}`;
-                document.getElementById('current-week-label').innerText = `Minggu ${currentWeek}`;
-                document.getElementById('section-main-dashboard').classList.remove('hidden');
+                const weekNum = parseInt(tabId.substring(1));
+                const status = getWeekLockStatus(weekNum);
+                if (status.locked) {
+                    showToast(`Maaf! Minggu ini masih terkunci. ${status.reason}`, 'error');
+                    return;
                 renderDashboard();
             } else if (tabId === 'dashboard') {
                 document.getElementById('section-main-dashboard').classList.remove('hidden');
