@@ -127,7 +127,7 @@
     <!-- REAL-TIME SYNC INDICATOR -->
     <div id="sync-status" class="fixed top-4 lg:top-6 right-4 lg:right-8 z-[200] flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-[10px] font-bold shadow-xl transition-all duration-300">
         <div class="w-2 h-2 rounded-full bg-slate-500 animate-pulse" id="sync-dot"></div>
-        <span id="sync-text" class="text-slate-300">Menyambung...</span>
+        <span id="sync-text" class="text-slate-300">synchronizing...</span>
     </div>
 
     <!-- TOAST CONTAINER -->
@@ -278,6 +278,8 @@
                             <span class="text-xs font-bold text-slate-300">Pusingan: <span id="subheader-active-week" class="text-amber-400 font-black">Minggu 1</span></span>
                         </div>
 
+                        <div class="h-5 w-px bg-slate-800 self-center shrink-0"></div>
+                        
                         <div class="flex items-center gap-2.5 sm:gap-4 shrink-0">
                             <button onclick="resetCurrentWeekData()" class="group flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all font-bold text-xs shrink-0 border border-red-500/20">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 transition-transform duration-500 group-hover:rotate-180"></i>
