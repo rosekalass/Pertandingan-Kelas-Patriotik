@@ -954,18 +954,7 @@
             });
 
             Each((c) => {
-                const rankBadge = idx === 0 ? '🥇 1' : idx === 1 ? '🥈 2' : idx === 2 ? '🥉 3' : `#${idx + 1}`;
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/40">
-                        <td class="py-3.5 pl-4 text-center font-black font-sports text-base ${idx===0?'text-amber-400':idx===1?'text-slate-300':idx===2?'text-amber-600':'text-slate-400'}">${rankBadge}</td>
-                        <td class="py-3.5 font-bold text-white font-sports text-base">${c.name} <span class="text-[10px] text-slate-400 font-normal">(${c.year})</span></td>
-                        <td class="py-3.5 text-center font-semibold">${c.kreativiti}</td>
-                        <td class="py-3.5 text-center font-semibold">${c.keceriaan}</td>
-                        <td class="py-3.5 text-center font-semibold">${c.kekemasan}</td>
-                        <td class="py-3.5 text-center font-semibold">${c.patriotisme}</td>
-                        <td class="py-3.5 text-center font-semibold">${c.etikaBendera}</td>
-                        <td class="py-3.5 text-right pr-4 font-black text-amber-400 text-xl font-sports">${c.total}</td>
-                    </tr>
+                tbody.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/40"><td class="py-3.5 text-center font-semibold">${c.kreativiti}</td><td class="py-3.5 text-center font-semibold">${c.keceriaan}</td><td class="py-3.5 text-center font-semibold">${c.kekemasan}</td><td class="py-3.5 text-center font-semibold">${c.patriotisme}</td><td class="py-3.5 text-center font-semibold">${c.etikaBendera}</td><td class="py-3.5 text-right pr-4 font-black text-amber-400 text-xl font-sports">${c.total}</td></tr>`;
             });
         }
 
