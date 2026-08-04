@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth h-full">
 <head>
-    <meta charset="UTF-8">F
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pertandingan Keceriaan Kelas MATTARY 2026</title>
     
@@ -953,7 +953,7 @@
                 });
             });
 
-            Each((c) => {
+            ranked.forEach((c) => {
                 tbody.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/40"><td class="py-3.5 text-center font-semibold">${c.kreativiti}</td><td class="py-3.5 text-center font-semibold">${c.keceriaan}</td><td class="py-3.5 text-center font-semibold">${c.kekemasan}</td><td class="py-3.5 text-center font-semibold">${c.patriotisme}</td><td class="py-3.5 text-center font-semibold">${c.etikaBendera}</td><td class="py-3.5 text-right pr-4 font-black text-amber-400 text-xl font-sports">${c.total}</td></tr>`;
             });
         }
