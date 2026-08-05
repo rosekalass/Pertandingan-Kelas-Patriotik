@@ -134,8 +134,17 @@
     <div id="toast-container" class="fixed bottom-5 right-5 z-[150] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- LOGIN SCREEN OVERLAY -->
-    <div id="login-screen" class="fixed inset-0 bg-navy-950/95 backdrop-blur-md z-[180] flex items-center justify-center p-4">
-        <div class="bg-navy-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-amber-500/30">
+   <div id="login-screen" class="fixed inset-0 bg-navy-950/95 backdrop-blur-md z-[180] hidden items-center justify-center p-4">
+    <div class="relative bg-navy-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-amber-500/30">
+
+        <button
+            type="button"
+            onclick="closeLoginModal()"
+            aria-label="Tutup log masuk"
+            class="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+        >
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>">
             <div class="p-8">
                 <div class="flex flex-col items-center text-center mb-6">
                     <div class="mb-4 relative">
@@ -285,7 +294,7 @@
 
                             <div class="h-5 w-px bg-slate-800 self-center shrink-0"></div>
                             
-                            <button onclick="resetCurrentWeekData()" class="group flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all font-bold text-xs shrink-0 border border-red-500/20">
+                           <button id="btn-reset" onclick="resetCurrentWeekData()" class="group flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all font-bold text-xs shrink-0 border border-red-500/20">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 transition-transform duration-500 group-hover:rotate-180"></i>
                                 <span class="hidden sm:inline">Set Semula</span>
                             </button>
@@ -302,8 +311,14 @@
 
                             <div class="h-5 w-px bg-slate-800 self-center shrink-0"></div>
 
-                            <button onclick="doLogout()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-xl transition-all font-bold text-xs shrink-0">
-                                <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden sm:inline">Keluar</span>
+                            <button id="btn-login" onclick="openLoginModal()" class="hidden flex items-center gap-2 px-3 py-2 bg-amber-400 hover:bg-amber-300 text-navy-950 rounded-xl transition-all font-black text-xs shrink-0">
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Log Masuk</span>
+                            </button>
+
+                            <button id="btn-logout" onclick="doLogout()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-xl transition-all font-bold text-xs shrink-0">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Keluar</span>
                             </button>
                         </div>
                     </div>
@@ -313,7 +328,7 @@
             <div class="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8 no-scrollbar smooth-scroll relative">
                 
                 <!-- SECTION 1: DASHBOARD OVERVIEW & LIVE SCORES -->
-                <div id="section-main-dashboard" class="space-y-8">
+               <div id="section-main-dashboard" class="space-y-8 hidden">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="glass-card p-5 rounded-2xl border border-slate-800 flex items-center gap-4"><div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl"><i data-lucide="school" class="w-5 h-5"></i></div><div><p class="text-[10px] text-slate-400 font-bold uppercase">Jumlah Kelas</p><h4 class="text-lg font-black text-white" id="stat-total-classes">18</h4></div></div>
                         <div class="glass-card p-5 rounded-2xl border border-slate-800 flex items-center gap-4"><div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i data-lucide="clipboard-check" class="w-5 h-5"></i></div><div><p class="text-[10px] text-slate-400 font-bold uppercase">Telah Dinilai</p><h4 class="text-lg font-black text-white" id="stat-evaluated-classes">0 / 18</h4></div></div>
@@ -330,7 +345,7 @@
                 </div>
 
                 <!-- SECTION 2: ULTIMATE LEADERBOARD (FUT STADIUM EXPERIENCE) -->
-                <div id="section-leaderboard" class="space-y-12 relative hidden">
+                <div id="section-leaderboard" class="space-y-12 relative">
                     <canvas id="arena-particle-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-50"></canvas>
                     
                     <div class="relative z-10 rounded-3xl bg-gradient-to-r from-navy-950 via-blue-950 to-navy-950 border border-amber-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden">
@@ -388,7 +403,7 @@
                         <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
                             <div><h3 class="text-xl font-black text-white uppercase font-sports flex items-center gap-2"><i data-lucide="medal" class="w-5 h-5 text-amber-400"></i> Carta Kedudukan Kumulatif Rasmi</h3></div>
                             <div class="flex gap-2">
-                                <button onclick="triggerPrintReport()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center gap-2 transition-all"><i data-lucide="printer" class="w-4 h-4"></i> Cetak Laporan Penuh</button>
+                                <button id="btn-print-report" onclick="triggerPrintReport()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center gap-2 transition-all"><i data-lucide="printer" class="w-4 h-4"></i> Cetak Laporan Penuh</button>
                             </div>
                         </div>
                         <div class="overflow-x-auto">
@@ -533,7 +548,7 @@
 
         let evaluations = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} };
         let currentWeek = 1; 
-        let activeTab = 'dashboard';
+        let activeTab = 'leaderboard';
         let currentEditingClassId = null;
         let isSidebarCollapsed = false;
         let draftScores = { kreativiti: 0, keceriaan: 0, kekemasan: 0, patriotisme: 0, etikaBendera: 0 };
@@ -630,19 +645,51 @@
             lucide.createIcons();
             buildScoreButtonSelectors();
             initCharts();
-            updateChartTheme(); 
+            updateChartTheme();
             initArenaParticles();
-            
-            document.getElementById('confirm-btn-cancel').onclick = () => handleConfirmChoice(false);
-            document.getElementById('confirm-btn-ok').onclick = () => handleConfirmChoice(true);
 
-            if (sessionStorage.getItem('loggedInRole')) {
-                document.getElementById('login-screen').classList.add('hidden');
-                applyRolePermissions();
-                initFirebaseSync();
-            }
-        };
+        document.getElementById('confirm-btn-cancel').onclick =
+            () => handleConfirmChoice(false);
 
+        document.getElementById('confirm-btn-ok').onclick =
+            () => handleConfirmChoice(true);
+
+    // Pengguna awam terus melihat Ultimate Leaderboard.
+    // Jika sudah login dalam sesi ini, akses login dikembalikan.
+    applyRolePermissions();
+
+    // Firebase perlu berjalan walaupun pengguna belum login
+    // supaya leaderboard awam memaparkan data semasa.
+    initFirebaseSync();
+};
+
+function openLoginModal() {
+    const modal = document.getElementById('login-screen');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    handleRoleChange();
+
+    setTimeout(() => {
+        document.getElementById('login-password')?.focus();
+    }, 50);
+
+    lucide.createIcons();
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('login-screen');
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    const passwordInput = document.getElementById('login-password');
+
+    if (passwordInput) {
+        passwordInput.value = '';
+    }
+}        
         function handleRoleChange() {
             const role = document.getElementById('login-role').value;
             const passWrap = document.getElementById('password-wrapper');
@@ -659,7 +706,7 @@
             }
 
             sessionStorage.setItem('loggedInRole', role);
-            document.getElementById('login-screen').classList.add('hidden');
+            closeLoginModal();
             showToast(`Berjaya masuk sebagai ${ROLE_DETAILS[role].name}`, 'success');
             
             applyRolePermissions();
@@ -668,29 +715,90 @@
 
         function doLogout() {
             sessionStorage.removeItem('loggedInRole');
-            document.getElementById('login-screen').classList.remove('hidden');
+
+            applyRolePermissions();
+            showToast('Anda kini berada dalam mod tontonan umum.','info'
+            );
         }
 
         function applyRolePermissions() {
-            const roleKey = sessionStorage.getItem('loggedInRole');
-            const roleObj = ROLE_DETAILS[roleKey] || ROLE_DETAILS["Public"];
+    const roleKey = sessionStorage.getItem('loggedInRole');
+    const isLoggedIn = Boolean(roleKey);
 
-            document.getElementById('subheader-user-avatar').innerText = roleObj.short;
-            document.getElementById('subheader-user-name').innerText = roleObj.name;
-            document.getElementById('subheader-user-role').innerText = roleKey === 'Admin' ? 'Akses Penuh' : (roleObj.isJudge ? 'Juri Rasmi' : 'Akses Terhad');
+    const roleObj =
+        ROLE_DETAILS[roleKey] || ROLE_DETAILS['Public'];
 
-            const navEval = document.getElementById('nav-eval-section');
-            if (roleKey === 'Public') {
-                navEval.classList.add('hidden');
-                switchTab('leaderboard');
-            } else {
-                navEval.classList.remove('hidden');
-                evalWeekLocks();
-                switchTab('dashboard');
-            }
-        }
+    document.getElementById('subheader-user-avatar').innerText =
+        roleObj.short;
+
+    document.getElementById('subheader-user-name').innerText =
+        roleObj.name;
+
+    document.getElementById('subheader-user-role').innerText =
+        !isLoggedIn
+            ? 'Akses Awam'
+            : roleKey === 'Admin'
+                ? 'Akses Penuh'
+                : roleObj.isJudge
+                    ? 'Juri Rasmi'
+                    : 'Akses Terhad';
+
+    const navEval =
+        document.getElementById('nav-eval-section');
+
+    const analysisTab =
+        document.getElementById('tab-analysis');
+
+    const resetButton =
+        document.getElementById('btn-reset');
+
+    const printButton =
+        document.getElementById('btn-print-report');
+
+    const loginButton =
+        document.getElementById('btn-login');
+
+    const logoutButton =
+        document.getElementById('btn-logout');
+
+    if (!isLoggedIn) {
+        navEval.classList.add('hidden');
+        analysisTab.classList.add('hidden');
+        resetButton.classList.add('hidden');
+        printButton.classList.add('hidden');
+
+        loginButton.classList.remove('hidden');
+        logoutButton.classList.add('hidden');
+
+        switchTab('leaderboard');
+    } else {
+        navEval.classList.remove('hidden');
+        analysisTab.classList.remove('hidden');
+        resetButton.classList.remove('hidden');
+        printButton.classList.remove('hidden');
+
+        loginButton.classList.add('hidden');
+        logoutButton.classList.remove('hidden');
+
+        evalWeekLocks();
+        switchTab('dashboard');
+    }
+
+    lucide.createIcons();
+}
 
         function switchTab(tabId) {
+            const isLoggedIn =
+                Boolean(sessionStorage.getItem('loggedInRole'));
+
+            if (!isLoggedIn && tabId !== 'leaderboard') {
+            showToast('Sila log masuk untuk menggunakan fungsi ini.','info'
+            );
+
+            openLoginModal();
+            return;
+            }
+            
             activeTab = tabId;
             document.querySelectorAll('.nav-tab').forEach(btn => { btn.classList.remove('bg-gradient-to-r', 'from-blue-600', 'to-indigo-600', 'text-white', 'shadow-lg', 'active-tab'); btn.classList.add('text-slate-400'); });
             const activeBtn = document.getElementById(`tab-${tabId}`);
