@@ -144,7 +144,7 @@
             class="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
         >
             <i data-lucide="x" class="w-4 h-4"></i>
-        </button>">
+        </button>
             <div class="p-8">
                 <div class="flex flex-col items-center text-center mb-6">
                     <div class="mb-4 relative">
@@ -293,6 +293,31 @@
                             </button>
 
                             <div class="h-5 w-px bg-slate-800 self-center shrink-0"></div>
+
+                            <button
+    id="btn-leaderboard-lock"
+    onclick="toggleLeaderboardLock()"
+    class="hidden flex items-center gap-2 px-3 py-2
+           bg-amber-500/10 hover:bg-amber-500/20
+           text-amber-400 rounded-xl transition-all
+           font-bold text-xs shrink-0
+           border border-amber-500/30"
+>
+    <i
+        id="leaderboard-lock-icon"
+        data-lucide="lock"
+        class="w-4 h-4"
+    ></i>
+
+    <span
+        id="leaderboard-lock-button-text"
+        class="hidden sm:inline"
+    >
+        Kunci Leaderboard
+    </span>
+</button>
+                            
+                            <div class="h-5 w-px bg-slate-800 self-center shrink-0"></div>
                             
                            <button id="btn-reset" onclick="resetCurrentWeekData()" class="group flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all font-bold text-xs shrink-0 border border-red-500/20">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 transition-transform duration-500 group-hover:rotate-180"></i>
@@ -347,7 +372,65 @@
                 <!-- SECTION 2: ULTIMATE LEADERBOARD (FUT STADIUM EXPERIENCE) -->
                 <div id="section-leaderboard" class="space-y-12 relative">
                     <canvas id="arena-particle-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-50"></canvas>
-                    
+                    <!-- Paparan apabila leaderboard dikunci -->
+<div
+    id="leaderboard-locked-panel"
+    class="hidden relative z-30 min-h-[65vh]
+           items-center justify-center px-4 py-12"
+>
+    <div
+        class="w-full max-w-2xl glass-card rounded-3xl
+               border border-amber-500/40
+               p-8 sm:p-12 text-center shadow-2xl"
+    >
+        <div
+            class="mx-auto mb-5 w-20 h-20 rounded-3xl
+                   bg-amber-500/10 border border-amber-500/30
+                   flex items-center justify-center"
+        >
+            <i
+                data-lucide="lock-keyhole"
+                class="w-10 h-10 text-amber-400"
+            ></i>
+        </div>
+
+        <p
+            class="text-[10px] sm:text-xs font-black uppercase
+                   tracking-[0.25em] text-amber-400 mb-3"
+        >
+            Paparan Markah Ditutup Sementara
+        </p>
+
+        <h2
+            class="text-3xl sm:text-5xl font-black
+                   text-white font-sports uppercase"
+        >
+            Ultimate Leaderboard Dikunci
+        </h2>
+
+        <p
+            id="leaderboard-locked-message"
+            class="mt-4 text-sm text-slate-300 leading-relaxed"
+        >
+            Keputusan terkini sedang dirahsiakan oleh KP Sejarah.
+            Carta akan dipaparkan semula apabila dibuka oleh pentadbir.
+        </p>
+
+        <div
+            class="mt-7 inline-flex items-center gap-2
+                   px-4 py-2 rounded-full bg-slate-950/70
+                   border border-slate-700
+                   text-xs font-bold text-slate-400"
+        >
+            <i
+                data-lucide="shield-check"
+                class="w-4 h-4 text-emerald-400"
+            ></i>
+
+            Data masih disimpan dengan selamat di Firebase
+        </div>
+    </div>
+</div>
                     <div class="relative z-10 rounded-3xl bg-gradient-to-r from-navy-950 via-blue-950 to-navy-950 border border-amber-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden">
                         <div class="absolute top-0 left-1/4 w-32 h-64 bg-blue-500/10 blur-3xl transform -rotate-45 pointer-events-none"></div>
                         <div class="absolute top-0 right-1/4 w-32 h-64 bg-amber-500/10 blur-3xl transform rotate-45 pointer-events-none"></div>
@@ -556,6 +639,13 @@
 
         let trendChartInst = null, radarChartInst = null, distChartInst = null, yearChartInst = null;
         let confirmPromiseResolve = null;
+        let firebaseSyncStarted = false;
+
+// Sembunyikan markah sehingga status lock Firebase diterima
+let leaderboardLocked = true;
+
+let leaderboardLockReady = false;
+let leaderboardLockListenerStarted = false;
 
         // UI HELPERS
         function showToast(message, type = 'success') {
@@ -598,7 +688,15 @@
         }
 
         async function initFirebaseSync() {
-            if (!window.auth || !window.db) return;
+    if (
+        !window.auth ||
+        !window.db ||
+        firebaseSyncStarted
+    ) {
+        return;
+    }
+
+    firebaseSyncStarted = true;
             updateSyncStatus('syncing');
 
             const loginUser = async () => {
@@ -615,7 +713,8 @@
             await loginUser();
 
             if (!window.auth.currentUser) return;
-
+            // Mulakan pemantauan status lock
+            initLeaderboardLockSync();
             import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").then(({ collection, onSnapshot }) => {
                 const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'evaluations');
                 onSnapshot(colRef, (snapshot) => {
@@ -639,7 +738,283 @@
                 });
             });
         }
+function initLeaderboardLockSync() {
+    if (
+        !window.db ||
+        leaderboardLockListenerStarted
+    ) {
+        return;
+    }
 
+    leaderboardLockListenerStarted = true;
+
+    import(
+        "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
+    ).then(({ doc, onSnapshot }) => {
+
+        const lockRef = doc(
+            window.db,
+            "artifacts",
+            window.appId,
+            "public",
+            "data",
+            "settings",
+            "leaderboard"
+        );
+
+        onSnapshot(
+            lockRef,
+
+            (snapshot) => {
+                // Jika dokumen belum wujud,
+                // leaderboard dibuka secara default
+                leaderboardLocked = snapshot.exists()
+                    ? snapshot.data().locked === true
+                    : false;
+
+                leaderboardLockReady = true;
+
+                updateLeaderboardLockUI();
+
+                if (activeTab === "leaderboard") {
+                    renderLeaderboard();
+                }
+            },
+
+            (error) => {
+                console.error(
+                    "Leaderboard lock listener error:",
+                    error
+                );
+
+                // Jika status gagal dibaca,
+                // sembunyikan markah sebagai langkah keselamatan
+                leaderboardLocked = true;
+                leaderboardLockReady = true;
+
+                updateLeaderboardLockUI();
+            }
+        );
+    });
+}
+
+function canViewLockedLeaderboard() {
+    return (
+        sessionStorage.getItem("loggedInRole") === "Admin"
+    );
+}
+
+function updateLeaderboardLockUI() {
+    const section =
+        document.getElementById("section-leaderboard");
+
+    const lockedPanel =
+        document.getElementById("leaderboard-locked-panel");
+
+    const lockButton =
+        document.getElementById("btn-leaderboard-lock");
+
+    const lockButtonText =
+        document.getElementById(
+            "leaderboard-lock-button-text"
+        );
+
+    const lockIcon =
+        document.getElementById(
+            "leaderboard-lock-icon"
+        );
+
+    const lockedMessage =
+        document.getElementById(
+            "leaderboard-locked-message"
+        );
+
+    if (!section || !lockedPanel) {
+        return;
+    }
+
+    const hideLeaderboard =
+        !canViewLockedLeaderboard() &&
+        (
+            !leaderboardLockReady ||
+            leaderboardLocked
+        );
+
+    // Sembunyikan semua kandungan leaderboard
+    // kecuali canvas dan panel lock
+    Array.from(section.children).forEach((child) => {
+        if (
+            child === lockedPanel ||
+            child.id === "arena-particle-canvas"
+        ) {
+            return;
+        }
+
+        child.style.display =
+            hideLeaderboard ? "none" : "";
+    });
+
+    lockedPanel.classList.toggle(
+        "hidden",
+        !hideLeaderboard
+    );
+
+    lockedPanel.classList.toggle(
+        "flex",
+        hideLeaderboard
+    );
+
+    if (lockedMessage) {
+        lockedMessage.textContent =
+            !leaderboardLockReady
+                ? "Sistem sedang menyemak status paparan keputusan..."
+                : "Keputusan terkini sedang dirahsiakan oleh KP Sejarah. Carta akan dipaparkan semula apabila dibuka oleh pentadbir.";
+    }
+
+    if (lockButtonText) {
+        lockButtonText.textContent =
+            leaderboardLocked
+                ? "Buka Leaderboard"
+                : "Kunci Leaderboard";
+    }
+
+    if (lockIcon) {
+        lockIcon.setAttribute(
+            "data-lucide",
+            leaderboardLocked
+                ? "lock-open"
+                : "lock"
+        );
+    }
+
+    if (lockButton) {
+        lockButton.classList.toggle(
+            "bg-emerald-500/10",
+            leaderboardLocked
+        );
+
+        lockButton.classList.toggle(
+            "border-emerald-500/30",
+            leaderboardLocked
+        );
+
+        lockButton.classList.toggle(
+            "text-emerald-400",
+            leaderboardLocked
+        );
+
+        lockButton.classList.toggle(
+            "bg-amber-500/10",
+            !leaderboardLocked
+        );
+
+        lockButton.classList.toggle(
+            "border-amber-500/30",
+            !leaderboardLocked
+        );
+
+        lockButton.classList.toggle(
+            "text-amber-400",
+            !leaderboardLocked
+        );
+    }
+
+    lucide.createIcons();
+}
+
+async function toggleLeaderboardLock() {
+    const role =
+        sessionStorage.getItem("loggedInRole");
+
+    if (role !== "Admin") {
+        showToast(
+            "Hanya KP Sejarah boleh mengunci atau membuka leaderboard.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!window.auth?.currentUser || !window.db) {
+        showToast(
+            "Sambungan Firebase belum tersedia. Cuba sebentar lagi.",
+            "error"
+        );
+
+        return;
+    }
+
+    const nextLockedState =
+        !leaderboardLocked;
+
+    const confirmed = await showConfirm(
+        nextLockedState
+            ? "Kunci Ultimate Leaderboard"
+            : "Buka Ultimate Leaderboard",
+
+        nextLockedState
+            ? "Semua pengguna selain KP Sejarah tidak akan dapat melihat kedudukan dan markah terkini. Teruskan?"
+            : "Kedudukan dan markah terkini akan dipaparkan semula kepada tontonan umum. Teruskan?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    updateSyncStatus("saving");
+
+    import(
+        "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
+    )
+        .then(({ doc, setDoc }) => {
+            const lockRef = doc(
+                window.db,
+                "artifacts",
+                window.appId,
+                "public",
+                "data",
+                "settings",
+                "leaderboard"
+            );
+
+            return setDoc(
+                lockRef,
+                {
+                    locked: nextLockedState,
+                    updatedAt:
+                        new Date().toISOString(),
+                    updatedBy:
+                        "Admin-KP-Sejarah"
+                },
+                {
+                    merge: true
+                }
+            );
+        })
+        .then(() => {
+            showToast(
+                nextLockedState
+                    ? "Ultimate Leaderboard telah dikunci."
+                    : "Ultimate Leaderboard telah dibuka untuk tontonan umum.",
+                "success"
+            );
+
+            updateSyncStatus("saved");
+        })
+        .catch((error) => {
+            console.error(
+                "Failed to update leaderboard lock:",
+                error
+            );
+
+            showToast(
+                "Gagal mengubah status leaderboard.",
+                "error"
+            );
+
+            updateSyncStatus("error");
+        });
+}
         window.onload = function () {
             document.documentElement.classList.add('dark');
             lucide.createIcons();
@@ -722,71 +1097,106 @@ function closeLoginModal() {
         }
 
         function applyRolePermissions() {
-    const roleKey = sessionStorage.getItem('loggedInRole');
-    const isLoggedIn = Boolean(roleKey);
+    const roleKey =
+        sessionStorage.getItem("loggedInRole");
+
+    const isLoggedIn =
+        Boolean(roleKey);
 
     const roleObj =
-        ROLE_DETAILS[roleKey] || ROLE_DETAILS['Public'];
+        ROLE_DETAILS[roleKey] ||
+        ROLE_DETAILS["Public"];
 
-    document.getElementById('subheader-user-avatar').innerText =
-        roleObj.short;
+    document.getElementById(
+        "subheader-user-avatar"
+    ).innerText = roleObj.short;
 
-    document.getElementById('subheader-user-name').innerText =
-        roleObj.name;
+    document.getElementById(
+        "subheader-user-name"
+    ).innerText = roleObj.name;
 
-    document.getElementById('subheader-user-role').innerText =
+    document.getElementById(
+        "subheader-user-role"
+    ).innerText =
         !isLoggedIn
-            ? 'Akses Awam'
-            : roleKey === 'Admin'
-                ? 'Akses Penuh'
+            ? "Akses Awam"
+            : roleKey === "Admin"
+                ? "Akses Penuh"
                 : roleObj.isJudge
-                    ? 'Juri Rasmi'
-                    : 'Akses Terhad';
+                    ? "Juri Rasmi"
+                    : "Akses Terhad";
 
     const navEval =
-        document.getElementById('nav-eval-section');
+        document.getElementById(
+            "nav-eval-section"
+        );
 
     const analysisTab =
-        document.getElementById('tab-analysis');
+        document.getElementById(
+            "tab-analysis"
+        );
 
     const resetButton =
-        document.getElementById('btn-reset');
+        document.getElementById(
+            "btn-reset"
+        );
 
     const printButton =
-        document.getElementById('btn-print-report');
+        document.getElementById(
+            "btn-print-report"
+        );
 
     const loginButton =
-        document.getElementById('btn-login');
+        document.getElementById(
+            "btn-login"
+        );
 
     const logoutButton =
-        document.getElementById('btn-logout');
+        document.getElementById(
+            "btn-logout"
+        );
+
+    const leaderboardLockButton =
+        document.getElementById(
+            "btn-leaderboard-lock"
+        );
 
     if (!isLoggedIn) {
-        navEval.classList.add('hidden');
-        analysisTab.classList.add('hidden');
-        resetButton.classList.add('hidden');
-        printButton.classList.add('hidden');
+        navEval.classList.add("hidden");
+        analysisTab.classList.add("hidden");
+        resetButton.classList.add("hidden");
+        printButton.classList.add("hidden");
 
-        loginButton.classList.remove('hidden');
-        logoutButton.classList.add('hidden');
+        loginButton.classList.remove("hidden");
+        logoutButton.classList.add("hidden");
 
-        switchTab('leaderboard');
+        leaderboardLockButton.classList.add(
+            "hidden"
+        );
+
+        switchTab("leaderboard");
     } else {
-        navEval.classList.remove('hidden');
-        analysisTab.classList.remove('hidden');
-        resetButton.classList.remove('hidden');
-        printButton.classList.remove('hidden');
+        navEval.classList.remove("hidden");
+        analysisTab.classList.remove("hidden");
+        resetButton.classList.remove("hidden");
+        printButton.classList.remove("hidden");
 
-        loginButton.classList.add('hidden');
-        logoutButton.classList.remove('hidden');
+        loginButton.classList.add("hidden");
+        logoutButton.classList.remove("hidden");
+
+        // Hanya Admin/KP Sejarah nampak butang lock
+        leaderboardLockButton.classList.toggle(
+            "hidden",
+            roleKey !== "Admin"
+        );
 
         evalWeekLocks();
-        switchTab('dashboard');
+        switchTab("dashboard");
     }
 
+    updateLeaderboardLockUI();
     lucide.createIcons();
 }
-
         function switchTab(tabId) {
             const isLoggedIn =
                 Boolean(sessionStorage.getItem('loggedInRole'));
@@ -819,6 +1229,7 @@ function closeLoginModal() {
                 renderDashboard();
             } else if (tabId === 'leaderboard') {
                 document.getElementById('section-leaderboard').classList.remove('hidden');
+                updateLeaderboardLockUI();
                 renderLeaderboard();
             } else if (tabId === 'analysis') {
                 document.getElementById('section-analysis').classList.remove('hidden');
@@ -1020,6 +1431,72 @@ function closeLoginModal() {
         }
 
         function renderLeaderboard() {
+                updateLeaderboardLockUI();
+
+    const cannotView =
+        !canViewLockedLeaderboard() &&
+        (
+            !leaderboardLockReady ||
+            leaderboardLocked
+        );
+
+    if (cannotView) {
+        const tbody =
+            document.getElementById(
+                "leaderboard-table-body"
+            );
+
+        const tahap1 =
+            document.getElementById(
+                "tahap1-podium"
+            );
+
+        const tahap2 =
+            document.getElementById(
+                "tahap2-podium"
+            );
+
+        const tahap1Table =
+            document.getElementById(
+                "tahap1-table-body"
+            );
+
+        const tahap2Table =
+            document.getElementById(
+                "tahap2-table-body"
+            );
+
+        const highest =
+            document.getElementById(
+                "stat-highest-score"
+            );
+
+        if (tbody) {
+            tbody.innerHTML = "";
+        }
+
+        if (tahap1) {
+            tahap1.innerHTML = "";
+        }
+
+        if (tahap2) {
+            tahap2.innerHTML = "";
+        }
+
+        if (tahap1Table) {
+            tahap1Table.innerHTML = "";
+        }
+
+        if (tahap2Table) {
+            tahap2Table.innerHTML = "";
+        }
+
+        if (highest) {
+            highest.innerText = "TERKUNCI";
+        }
+
+        return;
+    }
             const tbody = document.getElementById('leaderboard-table-body');
             if (!tbody) return; tbody.innerHTML = '';
 
