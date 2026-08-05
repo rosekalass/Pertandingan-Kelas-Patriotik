@@ -955,9 +955,53 @@
             });
 
 
-            ranked.forEach((c) => {
-                tbody.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/40"><td class="py-3.5 text-center font-semibold">${c.kreativiti}</td><td class="py-3.5 text-center font-semibold">${c.keceriaan}</td><td class="py-3.5 text-center font-semibold">${c.kekemasan}</td><td class="py-3.5 text-center font-semibold">${c.patriotisme}</td><td class="py-3.5 text-center font-semibold">${c.etikaBendera}</td><td class="py-3.5 text-right pr-4 font-black text-amber-400 text-xl font-sports">${c.total}</td></tr>`;
-            });
+ranked.forEach((c, index) => {
+    tbody.innerHTML += `
+        <tr class="border-b border-slate-800/50 hover:bg-slate-800/40">
+
+            <!-- KEDUDUKAN -->
+            <td class="py-3.5 pl-4 text-center font-black text-slate-400">
+                ${index + 1}
+            </td>
+
+            <!-- NAMA KELAS -->
+            <td class="py-3.5 font-bold text-white font-sports text-lg">
+                ${c.name}
+            </td>
+
+            <!-- KREATIVITI -->
+            <td class="py-3.5 text-center font-semibold">
+                ${c.kreativiti}
+            </td>
+
+            <!-- KECERIAAN -->
+            <td class="py-3.5 text-center font-semibold">
+                ${c.keceriaan}
+            </td>
+
+            <!-- KEKEMASAN -->
+            <td class="py-3.5 text-center font-semibold">
+                ${c.kekemasan}
+            </td>
+
+            <!-- PATRIOTISME -->
+            <td class="py-3.5 text-center font-semibold">
+                ${c.patriotisme}
+            </td>
+
+            <!-- ETIKA BENDERA -->
+            <td class="py-3.5 text-center font-semibold">
+                ${c.etikaBendera}
+            </td>
+
+            <!-- JUMLAH MATA -->
+            <td class="py-3.5 text-right pr-4 font-black text-amber-400 text-xl font-sports">
+                ${c.total}
+            </td>
+
+        </tr>
+    `;
+});
         }
 
         // Helper functions
