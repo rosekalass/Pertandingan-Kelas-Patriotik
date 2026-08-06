@@ -482,7 +482,8 @@
                     </div>
 
                     <!-- CUMULATIVE SCORE TABLE WITH CLASS & PRINT BUTTON -->
-                    <div class="glass-card p-6 rounded-3xl shadow-xl border border-slate-800 relative z-10">
+                    <div id="cumulative-report-section "class="glass-card p-6 rounded-3xl shadow-xl border border-slate-800 relative z-10"
+                    >
                         <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
                             <div><h3 class="text-xl font-black text-white uppercase font-sports flex items-center gap-2"><i data-lucide="medal" class="w-5 h-5 text-amber-400"></i> Carta Kedudukan Kumulatif Rasmi</h3></div>
                             <div class="flex gap-2">
@@ -1639,6 +1640,277 @@ ranked.forEach((c, index) => {
         }
 
         function updateAnalytics(){ /* Placeholder, same logic as before utilizing evaluations object */ }
+        function triggerPrintReport() {
+    const reportSection = document.getElementById(
+        "cumulative-report-section"
+    );
+
+    const reportTable = reportSection?.querySelector("table");
+
+    const tableBody = document.getElementById(
+        "leaderboard-table-body"
+    );
+
+    if (!reportSection || !reportTable || !tableBody) {
+        showToast(
+            "Bahagian laporan tidak ditemui.",
+            "error"
+        );
+        return;
+    }
+
+    const rows = tableBody.querySelectorAll("tr");
+
+    if (rows.length === 0) {
+        showToast(
+            "Data laporan belum tersedia. Tunggu data selesai dimuatkan.",
+            "info"
+        );
+        return;
+    }
+
+    const printedAt = new Date().toLocaleString("ms-MY", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    const printWindow = window.open(
+        "",
+        "_blank",
+        "width=1200,height=850"
+    );
+
+    if (!printWindow) {
+        showToast(
+            "Browser menyekat paparan cetakan. Benarkan pop-up dan cuba semula.",
+            "error"
+        );
+        return;
+    }
+
+    printWindow.document.open();
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ms">
+        <head>
+            <meta charset="UTF-8">
+
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1.0"
+            >
+
+            <title>
+                Carta Kedudukan Kumulatif Rasmi
+            </title>
+
+            <style>
+                @page {
+                    size: A4 landscape;
+                    margin: 10mm;
+                }
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: white;
+                    color: black;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 15px;
+                }
+
+                .print-header h1 {
+                    margin: 0 0 4px;
+                    font-size: 20px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                }
+
+                .print-header h2 {
+                    margin: 0 0 5px;
+                    font-size: 15px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                }
+
+                .print-header p {
+                    margin: 2px 0;
+                    font-size: 10px;
+                }
+
+                .report-info {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 9px;
+                }
+
+                table {
+                    width: 100%;
+                    min-width: 0 !important;
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    color: black;
+                    font-size: 9px;
+                }
+
+                thead {
+                    display: table-header-group;
+                }
+
+                th,
+                td {
+                    border: 1px solid black !important;
+                    padding: 5px 3px !important;
+                    background: white !important;
+                    color: black !important;
+                    text-align: center !important;
+                    vertical-align: middle;
+                    overflow-wrap: break-word;
+                }
+
+                th {
+                    background: #e5e7eb !important;
+                    font-size: 8px;
+                    font-weight: 800;
+                    line-height: 1.2;
+                    text-transform: uppercase;
+
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+                th:nth-child(1),
+                td:nth-child(1) {
+                    width: 6%;
+                }
+
+                th:nth-child(2),
+                td:nth-child(2) {
+                    width: 20%;
+                    text-align: left !important;
+                }
+
+                th:nth-child(3),
+                td:nth-child(3),
+                th:nth-child(4),
+                td:nth-child(4),
+                th:nth-child(5),
+                td:nth-child(5),
+                th:nth-child(6),
+                td:nth-child(6),
+                th:nth-child(7),
+                td:nth-child(7) {
+                    width: 12%;
+                }
+
+                th:nth-child(8),
+                td:nth-child(8) {
+                    width: 14%;
+                    font-weight: 800 !important;
+                }
+
+                td:nth-child(8) {
+                    font-size: 11px;
+                }
+
+                tbody tr {
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                }
+
+                .print-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 50px;
+                    margin-top: 45px;
+                    font-size: 9px;
+                }
+
+                .signature {
+                    width: 220px;
+                    padding-top: 5px;
+                    border-top: 1px solid black;
+                    text-align: center;
+                }
+            </style>
+        </head>
+
+        <body>
+            <header class="print-header">
+                <h1>
+                    Ma’had Tahfiz Tun Abdul Rahman Ya’kub
+                </h1>
+
+                <h2>
+                    Carta Kedudukan Kumulatif Rasmi
+                </h2>
+
+                <p>
+                    Pertandingan Keceriaan Kelas Patriotik
+                    – Sambutan Bulan Kebangsaan 2026
+                </p>
+
+                <p>
+                    Markah maksimum setiap kriteria: 60 mata
+                    | Jumlah maksimum: 300 mata
+                </p>
+            </header>
+
+            <div class="report-info">
+                <span>
+                    Jumlah kelas: ${rows.length}
+                </span>
+
+                <span>
+                    Tarikh dicetak: ${printedAt}
+                </span>
+            </div>
+
+            ${reportTable.outerHTML}
+
+            <div class="print-footer">
+                <div class="signature">
+                    Disediakan oleh<br>
+                    Ketua Panitia Sejarah
+                </div>
+
+                <div class="signature">
+                    Disahkan oleh<br>
+                    Pentadbir Sekolah
+                </div>
+            </div>
+
+            <script>
+                window.addEventListener("load", function () {
+                    setTimeout(function () {
+                        window.print();
+                    }, 400);
+                });
+
+                window.addEventListener("afterprint", function () {
+                    window.close();
+                });
+            <\/script>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+}
     </script>
 </body>
 </html>
